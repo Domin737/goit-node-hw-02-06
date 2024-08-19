@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const contactsController = require("../../controllers/contactsController");
+const auth = require("../../middleware/auth");
 const Joi = require("joi");
 
 const contactSchema = Joi.object({
@@ -12,6 +13,8 @@ const contactSchema = Joi.object({
 const favoriteSchema = Joi.object({
   favorite: Joi.boolean().required(),
 });
+
+router.use(auth);
 
 router.get("/", contactsController.listContacts);
 
