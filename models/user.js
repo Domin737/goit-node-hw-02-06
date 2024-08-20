@@ -1,5 +1,6 @@
 const { Schema, model } = require("mongoose");
 const bcrypt = require("bcryptjs");
+const gravatar = require("gravatar");
 
 const userSchema = new Schema({
   password: {
@@ -16,13 +17,18 @@ const userSchema = new Schema({
     enum: ["starter", "pro", "business"],
     default: "starter",
   },
+  avatarURL: {
+    type: String,
+    default: function () {
+      return gravatar.url(this.email, { s: "250", d: "retro" }, true);
+    },
+  },
   token: {
     type: String,
     default: null,
   },
 });
 
-// Przed zapisaniem użytkownika szyfruj hasło
 userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     const salt = await bcrypt.genSalt(10);
