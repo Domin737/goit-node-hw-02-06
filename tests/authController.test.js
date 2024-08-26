@@ -43,6 +43,7 @@ describe("Auth Controller", () => {
 
     console.log("Generated token:", token);
 
+    // Update user with token
     await User.findByIdAndUpdate(userId, { token });
 
     const updatedUser = await User.findById(userId);
@@ -122,6 +123,10 @@ describe("Auth Controller", () => {
         .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(204);
+
+      // Verify that the token has been removed
+      const user = await User.findById(userId);
+      expect(user.token).toBeNull();
     });
 
     it("should return status 401 if token is invalid", async () => {
@@ -135,10 +140,18 @@ describe("Auth Controller", () => {
 
   describe("Current User", () => {
     it("should return current user information", async () => {
-      console.log("Token used for current user test:", token);
+      // Log in the user again to get a new token
+      const loginResponse = await request(app).post("/api/users/login").send({
+        email: userEmail,
+        password: userPassword,
+      });
+
+      const newToken = loginResponse.body.token;
+
+      console.log("Token used for current user test:", newToken);
       const response = await request(app)
         .get("/api/users/current")
-        .set("Authorization", `Bearer ${token}`);
+        .set("Authorization", `Bearer ${newToken}`);
 
       console.log("Current user response:", response.body);
 
