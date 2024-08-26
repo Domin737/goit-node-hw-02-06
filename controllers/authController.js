@@ -33,9 +33,7 @@ const signup = async (req, res, next) => {
 
     const avatarURL = gravatar.url(email, { s: "250", d: "retro" }, true);
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = new User({ email, password: hashedPassword, avatarURL });
+    const newUser = new User({ email, password, avatarURL });
     await newUser.save();
 
     const msg = {
@@ -71,6 +69,7 @@ const signup = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
+    console.log("Login attempt:", req.body);
     const { email, password } = req.body;
 
     const schema = Joi.object({
@@ -80,15 +79,33 @@ const login = async (req, res, next) => {
 
     const { error } = schema.validate(req.body);
     if (error) {
+      console.log("Validation error:", error.details[0].message);
       return res.status(400).json({ message: error.details[0].message });
     }
 
     const user = await User.findOne({ email });
+    console.log("User found:", user ? "Yes" : "No");
     if (!user) {
       return res.status(401).json({ message: "Email or password is wrong" });
     }
 
+    console.log("User verification status:", user.verify);
+    if (!user.verify) {
+      return res.status(401).json({ message: "Email not verified. Please check your email for verification link." });
+    }
+
+    console.log("Comparing passwords...");
+    console.log("Provided password:", password);
+    console.log("Stored hashed password:", user.password);
+    
+    // Test bcrypt.compare with known values
+    const testPassword = "testpassword";
+    const testHash = await bcrypt.hash(testPassword, 10);
+    const testCompare = await bcrypt.compare(testPassword, testHash);
+    console.log("Bcrypt test comparison:", testCompare);
+
     const passwordMatch = await bcrypt.compare(password, user.password);
+    console.log("Password match:", passwordMatch);
     if (!passwordMatch) {
       return res.status(401).json({ message: "Email or password is wrong" });
     }
@@ -99,6 +116,7 @@ const login = async (req, res, next) => {
     user.token = token;
     await user.save();
 
+    console.log("Login successful");
     res.status(200).json({
       token,
       user: {
@@ -107,6 +125,7 @@ const login = async (req, res, next) => {
       },
     });
   } catch (error) {
+    console.error("Login error:", error);
     next(error);
   }
 };
@@ -191,12 +210,7 @@ const verifyEmail = async (req, res, next) => {
     user.verify = true;
     user.verificationToken = null;
 
-    // Use findOneAndUpdate to bypass schema validation
-    await User.findOneAndUpdate(
-      { _id: user._id },
-      { verify: true, verificationToken: null },
-      { runValidators: false }
-    );
+    await user.save();
 
     res.status(200).json({ message: "Verification successful" });
   } catch (error) {

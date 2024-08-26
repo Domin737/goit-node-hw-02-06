@@ -34,13 +34,12 @@ const userSchema = new Schema({
   },
   verificationToken: {
     type: String,
-    required: [true, "Verify token is required"],
     default: uuidv4,
   },
 });
 
 userSchema.pre("save", async function (next) {
-  if (this.isModified("password")) {
+  if (this.isModified("password") && !this.password.startsWith('$2a$')) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
   }
