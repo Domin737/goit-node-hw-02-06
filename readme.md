@@ -27,6 +27,134 @@ This application is a robust Contact Management System with user authentication.
    - Update an existing contact
    - Delete a contact
    - Update contact's favorite status
+   - Filter contacts by favorite status
+   - Paginate contact list
+
+## API Endpoints
+
+### User Authentication
+
+1. **Register User**
+   ```
+   POST http://localhost:3000/api/users/signup
+   Content-Type: application/json
+   {
+     "email": "example@example.com",
+     "password": "examplepassword"
+   }
+   ```
+
+2. **Login User**
+   ```
+   POST http://localhost:3000/api/users/login
+   Content-Type: application/json
+   {
+     "email": "example@example.com",
+     "password": "examplepassword"
+   }
+   ```
+
+3. **Get Current User**
+   ```
+   GET http://localhost:3000/api/users/current
+   Authorization: Bearer [your_token]
+   ```
+
+4. **Logout User**
+   ```
+   GET http://localhost:3000/api/users/logout
+   Authorization: Bearer [your_token]
+   ```
+
+### Contact Management
+
+1. **List Contacts**
+   ```
+   GET http://localhost:3000/api/contacts
+   Authorization: Bearer [your_token]
+   ```
+
+2. **Get Single Contact**
+   ```
+   GET http://localhost:3000/api/contacts/{contact_id}
+   Authorization: Bearer [your_token]
+   ```
+
+3. **Add Contact**
+   ```
+   POST http://localhost:3000/api/contacts
+   Content-Type: application/json
+   {
+     "name": "John Doe",
+     "email": "example@example.com",
+     "phone": "123-456-789"
+   }
+   Authorization: Bearer [your_token]
+   ```
+
+4. **Delete Contact**
+   ```
+   DELETE http://localhost:3000/api/contacts/{contact_id}
+   Authorization: Bearer [your_token]
+   ```
+
+5. **Update Contact**
+   ```
+   PUT http://localhost:3000/api/contacts/{contact_id}
+   Content-Type: application/json
+   {
+     "name": "John Doe",
+     "email": "new_email@example.com",
+     "phone": "987-654-321"
+   }
+   Authorization: Bearer [your_token]
+   ```
+
+6. **Filter Contacts**
+   ```
+   GET http://localhost:3000/api/contacts?favorite=true
+   Authorization: Bearer [your_token]
+   ```
+
+7. **Paginate Contacts**
+   ```
+   GET http://localhost:3000/api/contacts?page=1&limit=10
+   Authorization: Bearer [your_token]
+   ```
+
+### User Profile Management
+
+1. **Update Subscription**
+   ```
+   PATCH http://localhost:3000/api/users/subscription
+   Content-Type: application/json
+   {
+     "subscription": "pro"
+   }
+   Authorization: Bearer [your_token]
+   ```
+
+## Expected and Unexpected Responses
+
+When using the application, you can expect the following types of responses:
+
+### Expected Responses:
+
+1. **Successful operations**: HTTP status codes in the 2xx range (e.g., 200 OK, 201 Created) with a JSON response body containing the requested data or a success message.
+2. **Authentication responses**: 
+   - Successful login/signup: 200 OK with a token in the response body.
+   - Successful logout: 204 No Content.
+3. **Pagination**: When listing contacts, expect a response with an array of contacts and metadata about the pagination (total count, current page, etc.).
+
+### Unexpected Responses:
+
+1. **Bad Request (400)**: When the request is malformed or contains invalid data.
+2. **Unauthorized (401)**: When trying to access protected routes without a valid token.
+3. **Forbidden (403)**: When trying to access or modify resources that don't belong to the authenticated user.
+4. **Not Found (404)**: When trying to access a resource that doesn't exist.
+5. **Internal Server Error (500)**: For unexpected server-side errors.
+
+All error responses will include a JSON body with an "error" field describing the issue.
 
 ## Integrations
 
@@ -42,60 +170,6 @@ The application integrates with several external services and libraries:
 8. **SendGrid**: For sending verification emails
 9. **Cors**: For enabling Cross-Origin Resource Sharing
 10. **Morgan**: For HTTP request logging
-
-## How to Use Each Functionality
-
-### User Authentication
-
-1. **Sign Up**
-   - Send a POST request to `/api/users/signup` with email and password in the request body.
-   - A verification email will be sent to the provided email address.
-
-2. **Email Verification**
-   - Click the link in the verification email or send a GET request to `/api/users/verify/:verificationToken`.
-
-3. **Resend Verification Email**
-   - If you didn't receive the verification email, send a POST request to `/api/users/verify` with your email in the request body.
-
-4. **Log In**
-   - Send a POST request to `/api/users/login` with email and password in the request body.
-   - You'll receive a JWT token to use for authenticated requests.
-
-5. **Log Out**
-   - Send a POST request to `/api/users/logout` with the JWT token in the Authorization header.
-
-### User Profile Management
-
-1. **Get Current User Info**
-   - Send a GET request to `/api/users/current` with the JWT token in the Authorization header.
-
-2. **Update User Avatar**
-   - Send a PATCH request to `/api/users/avatars` with the new avatar image file.
-   - The avatar will be resized to 250x250 pixels.
-
-3. **Update Subscription**
-   - Send a PATCH request to `/api/users` with the new subscription status ("starter", "pro", or "business") in the request body.
-
-### Contact Management
-
-1. **List Contacts**
-   - Send a GET request to `/api/contacts`.
-   - You can use query parameters for pagination (`page`, `limit`) and filtering by favorite status.
-
-2. **Get Contact by ID**
-   - Send a GET request to `/api/contacts/:contactId`.
-
-3. **Add New Contact**
-   - Send a POST request to `/api/contacts` with the contact details in the request body.
-
-4. **Update Contact**
-   - Send a PUT request to `/api/contacts/:contactId` with the updated contact details in the request body.
-
-5. **Delete Contact**
-   - Send a DELETE request to `/api/contacts/:contactId`.
-
-6. **Update Contact's Favorite Status**
-   - Send a PATCH request to `/api/contacts/:contactId/favorite` with the new favorite status in the request body.
 
 ## Running the Application
 
@@ -148,9 +222,26 @@ The tests cover the following functionalities:
    - User registration (signup)
    - User login
    - User logout
+   - Email verification
+   - Resend verification email
 
 2. **User Profile**
    - Retrieving current user information
+   - Updating user subscription
+
+3. **Contact Management**
+   - Creating a new contact
+   - Retrieving all contacts (including pagination and filtering)
+   - Retrieving a single contact
+   - Updating a contact
+   - Deleting a contact
+   - Updating a contact's favorite status
+
+4. **Input Validation**
+   - Ensuring proper validation for all API endpoints
+
+5. **Authorization**
+   - Verifying that protected routes require authentication
 
 ### Test Environment
 
@@ -171,3 +262,11 @@ If you encounter issues with the tests:
 5. For email-related tests, ensure that your SendGrid API key is valid and has the necessary permissions.
 
 Remember to never use your production database for testing. Always use a separate test database to prevent any unintended data manipulation in your production environment.
+
+## Author
+
+This project was created by Paweł Dominiak (p.dominiak.pd@gmail.com) as part of the GoIT Poland - Fullstack Developer course.
+
+## Project Context
+
+This Contact Management API was developed as a learning project within the GoIT Poland - Fullstack Developer course. It serves as a practical application of Node.js, Express.js, and MongoDB concepts, demonstrating skills in building RESTful APIs, implementing authentication and authorization, and working with databases.
