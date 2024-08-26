@@ -9,7 +9,6 @@ const path = require("path");
 const { errorHandler } = require("../middleware/errorHandler");
 const sgMail = require("@sendgrid/mail");
 
-// Set SendGrid API Key
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const signup = async (req, res, next) => {
@@ -48,11 +47,10 @@ const signup = async (req, res, next) => {
     try {
       await sgMail.send(msg);
     } catch (error) {
-      console.error('Error sending email:', error);
+      console.error("Error sending email:", error);
       if (error.response) {
         console.error(error.response.body);
       }
-      // Even if email sending fails, we'll still create the user
       console.log("User created, but verification email failed to send");
     }
 
@@ -92,13 +90,18 @@ const login = async (req, res, next) => {
 
     console.log("User verification status:", user.verify);
     if (!user.verify) {
-      return res.status(401).json({ message: "Email not verified. Please check your email for verification link." });
+      return res
+        .status(401)
+        .json({
+          message:
+            "Email not verified. Please check your email for verification link.",
+        });
     }
 
     console.log("Comparing passwords...");
     console.log("Provided password:", password);
     console.log("Stored hashed password:", user.password);
-    
+
     const passwordMatch = await bcrypt.compare(password, user.password);
     console.log("Password match:", passwordMatch);
     if (!passwordMatch) {
@@ -246,7 +249,7 @@ const resendVerificationEmail = async (req, res, next) => {
       await sgMail.send(msg);
       res.status(200).json({ message: "Verification email sent" });
     } catch (error) {
-      console.error('Error sending email:', error);
+      console.error("Error sending email:", error);
       if (error.response) {
         console.error(error.response.body);
       }

@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 
-jest.mock('@sendgrid/mail', () => ({
+jest.mock("@sendgrid/mail", () => ({
   setApiKey: jest.fn(),
   send: jest.fn().mockResolvedValue(true),
 }));
@@ -40,10 +40,9 @@ describe("Auth Controller", () => {
     token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-    
+
     console.log("Generated token:", token);
 
-    // Update user with token
     await User.findByIdAndUpdate(userId, { token });
 
     const updatedUser = await User.findById(userId);
@@ -91,7 +90,9 @@ describe("Auth Controller", () => {
         password: "newpassword",
       };
 
-      const response = await request(app).post("/api/users/signup").send(newUser);
+      const response = await request(app)
+        .post("/api/users/signup")
+        .send(newUser);
 
       expect(response.status).toBe(201);
       expect(response.body.user.email).toBe(newUser.email);
@@ -105,7 +106,9 @@ describe("Auth Controller", () => {
         password: "somepassword",
       };
 
-      const response = await request(app).post("/api/users/signup").send(existingUser);
+      const response = await request(app)
+        .post("/api/users/signup")
+        .send(existingUser);
 
       expect(response.status).toBe(409);
       expect(response.body.message).toBe("Email in use");
