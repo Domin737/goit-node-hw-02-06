@@ -115,3 +115,59 @@ The application integrates with several external services and libraries:
    - Fix linting issues: `npm run lint:fix`
 
 Make sure to set up all required environment variables, especially for MongoDB connection and SendGrid API key, before running the application.
+
+## Automated Tests
+
+This application includes automated tests to ensure its functionality. The tests are written using Jest and Supertest.
+
+### Running Tests
+
+To run the automated tests, follow these steps:
+
+1. Make sure you have all the dependencies installed:
+   ```
+   npm install
+   ```
+
+2. Set up the test environment variables in the `.env.test` file. At minimum, you need to set the following variables:
+   - `DB_TEST_HOST`: The MongoDB connection string for your test database
+   - `JWT_SECRET`: A secret key for JWT token generation
+   - `SENDGRID_API_KEY`: Your SendGrid API key for email functionality
+   - `SENDGRID_FROM_EMAIL`: The email address to use as the sender for verification emails
+
+3. Run the tests using the following command:
+   ```
+   npm test
+   ```
+
+### Test Coverage
+
+The tests cover the following functionalities:
+
+1. **User Authentication**
+   - User registration (signup)
+   - User login
+   - User logout
+
+2. **User Profile**
+   - Retrieving current user information
+
+### Test Environment
+
+The tests use a separate test database specified in the `.env.test` file. This ensures that your development or production database is not affected by the tests.
+
+### Continuous Integration
+
+It's recommended to run these tests as part of your CI/CD pipeline to ensure that new changes don't break existing functionality.
+
+### Troubleshooting Tests
+
+If you encounter issues with the tests:
+
+1. Make sure your `.env.test` file is properly configured with the correct database connection string, JWT secret, and SendGrid settings.
+2. Ensure that the test database is accessible and that you have the necessary permissions.
+3. Check that all dependencies are properly installed by running `npm install` again.
+4. If you're getting timeout errors, you may need to increase the timeout in the test file (currently set to 20000ms).
+5. For email-related tests, ensure that your SendGrid API key is valid and has the necessary permissions.
+
+Remember to never use your production database for testing. Always use a separate test database to prevent any unintended data manipulation in your production environment.

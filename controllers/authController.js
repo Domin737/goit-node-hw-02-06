@@ -38,7 +38,7 @@ const signup = async (req, res, next) => {
 
     const msg = {
       to: email,
-      from: "p.dominiak.pd@gmail.com",
+      from: process.env.SENDGRID_FROM_EMAIL,
       subject: "Please verify your email",
       html: `<a href="${req.protocol}://${req.get("host")}/api/users/verify/${
         newUser.verificationToken
@@ -52,15 +52,16 @@ const signup = async (req, res, next) => {
       if (error.response) {
         console.error(error.response.body);
       }
-      return res.status(500).json({ message: "Error sending verification email" });
+      // Even if email sending fails, we'll still create the user
+      console.log("User created, but verification email failed to send");
     }
 
     res.status(201).json({
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
-        avatarURL: newUser.avatarURL,
       },
+      message: "User created successfully",
     });
   } catch (error) {
     next(error);
@@ -98,12 +99,6 @@ const login = async (req, res, next) => {
     console.log("Provided password:", password);
     console.log("Stored hashed password:", user.password);
     
-    // Test bcrypt.compare with known values
-    const testPassword = "testpassword";
-    const testHash = await bcrypt.hash(testPassword, 10);
-    const testCompare = await bcrypt.compare(testPassword, testHash);
-    console.log("Bcrypt test comparison:", testCompare);
-
     const passwordMatch = await bcrypt.compare(password, user.password);
     console.log("Password match:", passwordMatch);
     if (!passwordMatch) {
@@ -240,7 +235,7 @@ const resendVerificationEmail = async (req, res, next) => {
 
     const msg = {
       to: email,
-      from: "p.dominiak.pd@gmail.com",
+      from: process.env.SENDGRID_FROM_EMAIL,
       subject: "Please verify your email",
       html: `<a href="${req.protocol}://${req.get("host")}/api/users/verify/${
         user.verificationToken
