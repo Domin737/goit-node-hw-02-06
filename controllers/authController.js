@@ -7,6 +7,10 @@ const jimp = require("jimp");
 const fs = require("fs/promises");
 const path = require("path");
 const { errorHandler } = require("../middleware/errorHandler");
+const sgMail = require("@sendgrid/mail");
+
+// Set SendGrid API Key
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const signup = async (req, res, next) => {
   try {
@@ -33,6 +37,25 @@ const signup = async (req, res, next) => {
 
     const newUser = new User({ email, password: hashedPassword, avatarURL });
     await newUser.save();
+
+    const msg = {
+      to: email,
+      from: "p.dominiak.pd@gmail.com",
+      subject: "Please verify your email",
+      html: `<a href="${req.protocol}://${req.get("host")}/api/users/verify/${
+        newUser.verificationToken
+      }">Click to verify your email</a>`,
+    };
+
+    try {
+      await sgMail.send(msg);
+    } catch (error) {
+      console.error('Error sending email:', error);
+      if (error.response) {
+        console.error(error.response.body);
+      }
+      return res.status(500).json({ message: "Error sending verification email" });
+    }
 
     res.status(201).json({
       user: {
@@ -156,6 +179,75 @@ const updateSubscription = async (req, res, next) => {
   }
 };
 
+const verifyEmail = async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+    const user = await User.findOne({ verificationToken });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.verify = true;
+    user.verificationToken = null;
+
+    // Use findOneAndUpdate to bypass schema validation
+    await User.findOneAndUpdate(
+      { _id: user._id },
+      { verify: true, verificationToken: null },
+      { runValidators: false }
+    );
+
+    res.status(200).json({ message: "Verification successful" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const resendVerificationEmail = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "missing required field email" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.verify) {
+      return res
+        .status(400)
+        .json({ message: "Verification has already been passed" });
+    }
+
+    const msg = {
+      to: email,
+      from: "p.dominiak.pd@gmail.com",
+      subject: "Please verify your email",
+      html: `<a href="${req.protocol}://${req.get("host")}/api/users/verify/${
+        user.verificationToken
+      }">Click to verify your email</a>`,
+    };
+
+    try {
+      await sgMail.send(msg);
+      res.status(200).json({ message: "Verification email sent" });
+    } catch (error) {
+      console.error('Error sending email:', error);
+      if (error.response) {
+        console.error(error.response.body);
+      }
+      res.status(500).json({ message: "Error sending verification email" });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   signup,
   login,
@@ -163,4 +255,6 @@ module.exports = {
   getCurrent,
   updateAvatar,
   updateSubscription,
+  verifyEmail,
+  resendVerificationEmail,
 };

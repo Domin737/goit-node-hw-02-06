@@ -1,6 +1,7 @@
 const { Schema, model } = require("mongoose");
 const bcrypt = require("bcryptjs");
 const gravatar = require("gravatar");
+const { v4: uuidv4 } = require("uuid");
 
 const userSchema = new Schema({
   password: {
@@ -26,6 +27,15 @@ const userSchema = new Schema({
   token: {
     type: String,
     default: null,
+  },
+  verify: {
+    type: Boolean,
+    default: false,
+  },
+  verificationToken: {
+    type: String,
+    required: [true, "Verify token is required"],
+    default: uuidv4,
   },
 });
 

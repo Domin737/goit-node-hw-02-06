@@ -68,4 +68,7 @@ router.patch("/subscription", auth, async (req, res, next) => {
   }
 });
 
+router.get("/verify/:verificationToken", authController.verifyEmail);
+router.post("/verify", authController.resendVerificationEmail);
+
 module.exports = router;
