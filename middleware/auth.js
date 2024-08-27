@@ -10,9 +10,9 @@ const auth = async (req, res, next) => {
   }
 
   try {
-    const { id } = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(id);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    const user = await User.findById(decoded.id);
     if (!user || user.token !== token) {
       return res.status(401).json({ message: "Not authorized" });
     }
@@ -20,6 +20,9 @@ const auth = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token expired" });
+    }
     res.status(401).json({ message: "Not authorized" });
   }
 };
