@@ -21,10 +21,11 @@ describe("Auth Controller", () => {
 
     console.log("JWT_SECRET:", process.env.JWT_SECRET);
 
-    await mongoose.connect(process.env.DB_TEST_HOST, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.DB_TEST_HOST);
+  });
+
+  beforeEach(async () => {
+    await User.deleteMany({});
 
     const newUser = new User({
       email: userEmail,
@@ -50,8 +51,11 @@ describe("Auth Controller", () => {
     console.log("Updated user:", updatedUser);
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     await User.deleteMany({});
+  });
+
+  afterAll(async () => {
     await mongoose.connection.close();
   });
 

@@ -4,7 +4,7 @@ const DB_HOST =
   "mongodb+srv://pdominiak:jPnzkmz3214!@cluster0.fq3ri.mongodb.net/db-contacts?retryWrites=true&w=majority";
 
 mongoose
-  .connect(DB_HOST, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(DB_HOST)
   .then(() => {
     console.log("Database connection successful");
   })
