@@ -25,12 +25,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const signup = handleAsync(async (req, res) => {
   const { email, password } = req.body;
 
-  const schema = Joi.object({
-    email: Joi.string().email().required(),
-    password: Joi.string().min(6).required(),
-  });
-
-  const { error } = schema.validate(req.body);
+  const { error } = validateUserSignup(req.body);
   if (error) {
     throw new BadRequestError(error.details[0].message);
   }
@@ -47,7 +42,10 @@ const signup = handleAsync(async (req, res) => {
 
   const msg = {
     to: email,
-    from: process.env.SENDGRID_FROM_EMAIL,
+    from: {
+      email: process.env.SENDGRID_FROM_EMAIL,
+      name: "Contact Management API",
+    },
     subject: "Please verify your email",
     html: `<a href="${req.protocol}://${req.get("host")}/api/users/verify/${
       newUser.verificationToken
@@ -187,7 +185,10 @@ const resendVerificationEmail = handleAsync(async (req, res) => {
 
   const msg = {
     to: email,
-    from: process.env.SENDGRID_FROM_EMAIL,
+    from: {
+      email: process.env.SENDGRID_FROM_EMAIL,
+      name: "Contact Management API",
+    },
     subject: "Please verify your email",
     html: `<a href="${req.protocol}://${req.get("host")}/api/users/verify/${
       user.verificationToken

@@ -33,9 +33,25 @@ const validateFavoriteStatus = (data) => {
   return schema.validate(data);
 };
 
+const validateSubscription = (data) => {
+  const schema = Joi.object({
+    subscription: Joi.string().valid('starter', 'pro', 'business').required(),
+  });
+  return schema.validate(data);
+};
+
+const validateEmail = (data) => {
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+  });
+  return schema.validate(data);
+};
+
 module.exports = {
   validateObjectId,
   validateUserSignup,
   validateContactData,
   validateFavoriteStatus,
+  validateSubscription,
+  validateEmail,
 };
