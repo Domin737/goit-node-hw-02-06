@@ -1,119 +1,121 @@
 const mongoose = require("mongoose");
 const Contact = require("../models/contacts");
+const Joi = require("joi");
+const { handleAsync } = require("../utils/asyncHandler");
+const { NotFoundError, BadRequestError } = require("../utils/errors");
 
-const listContacts = async (req, res, next) => {
-  try {
-    const { page = 1, limit = 20, favorite } = req.query;
-    const skip = (page - 1) * limit;
-
-    const filter = { owner: req.user._id };
-    if (favorite !== undefined) {
-      filter.favorite = favorite === "true";
-    }
-
-    const contacts = await Contact.find(filter)
-      .skip(skip)
-      .limit(parseInt(limit));
-
-    res.status(200).json(contacts);
-  } catch (error) {
-    next(error);
-  }
+// Funkcja do walidacji ObjectId
+const validateObjectId = (id) => {
+  return mongoose.Types.ObjectId.isValid(id);
 };
 
-const getById = async (req, res, next) => {
-  try {
-    const { contactId } = req.params;
+const validateContactBody = (body) => {
+  const schema = Joi.object({
+    name: Joi.string().required(),
+    email: Joi.string().email().required(),
+    phone: Joi.string().required(),
+    favorite: Joi.boolean(),
+  });
 
-    if (!mongoose.Types.ObjectId.isValid(contactId)) {
-      return res.status(400).json({ message: "Invalid contact ID" });
-    }
-
-    const contact = await Contact.findById(contactId);
-    if (!contact) {
-      return res.status(404).json({ message: "Not found" });
-    }
-    res.status(200).json(contact);
-  } catch (error) {
-    next(error);
-  }
+  return schema.validate(body);
 };
 
-const addContact = async (req, res, next) => {
-  try {
-    const { _id: owner } = req.user;
-    const newContact = await Contact.create({ ...req.body, owner });
-    res.status(201).json(newContact);
-  } catch (error) {
-    next(error);
+const listContacts = handleAsync(async (req, res) => {
+  const { page = 1, limit = 20, favorite } = req.query;
+  const skip = (page - 1) * limit;
+
+  const filter = { owner: req.user._id };
+  if (favorite !== undefined) {
+    filter.favorite = favorite === "true";
   }
-};
 
-const removeContact = async (req, res, next) => {
-  try {
-    const { contactId } = req.params;
+  const contacts = await Contact.find(filter).skip(skip).limit(parseInt(limit));
 
-    if (!mongoose.Types.ObjectId.isValid(contactId)) {
-      return res.status(400).json({ message: "Invalid contact ID" });
-    }
+  res.status(200).json(contacts);
+});
 
-    const contact = await Contact.findByIdAndDelete(contactId);
-    if (!contact) {
-      return res.status(404).json({ message: "Not found" });
-    }
-    res.status(200).json({ message: "Contact deleted" });
-  } catch (error) {
-    next(error);
+const getById = handleAsync(async (req, res) => {
+  const { contactId } = req.params;
+
+  if (!validateObjectId(contactId)) {
+    throw new BadRequestError("Invalid contact ID");
   }
-};
 
-const updateContact = async (req, res, next) => {
-  try {
-    const { contactId } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(contactId)) {
-      return res.status(400).json({ message: "Invalid contact ID" });
-    }
-
-    const updatedContact = await Contact.findByIdAndUpdate(
-      contactId,
-      req.body,
-      { new: true }
-    );
-    if (!updatedContact) {
-      return res.status(404).json({ message: "Not found" });
-    }
-    res.status(200).json(updatedContact);
-  } catch (error) {
-    next(error);
+  const contact = await Contact.findById(contactId);
+  if (!contact) {
+    throw new NotFoundError("Not found");
   }
-};
+  res.status(200).json(contact);
+});
 
-const updateStatusContact = async (req, res, next) => {
-  try {
-    const { contactId } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(contactId)) {
-      return res.status(400).json({ message: "Invalid contact ID" });
-    }
-
-    const { favorite } = req.body;
-    if (favorite === undefined) {
-      return res.status(400).json({ message: "missing field favorite" });
-    }
-    const updatedContact = await Contact.findByIdAndUpdate(
-      contactId,
-      { favorite },
-      { new: true }
-    );
-    if (!updatedContact) {
-      return res.status(404).json({ message: "Not found" });
-    }
-    res.status(200).json(updatedContact);
-  } catch (error) {
-    next(error);
+const addContact = handleAsync(async (req, res) => {
+  const { error } = validateContactBody(req.body);
+  if (error) {
+    throw new BadRequestError(error.details[0].message);
   }
-};
+
+  const { _id: owner } = req.user;
+  const newContact = await Contact.create({ ...req.body, owner });
+  res.status(201).json(newContact);
+});
+
+const removeContact = handleAsync(async (req, res) => {
+  const { contactId } = req.params;
+
+  if (!validateObjectId(contactId)) {
+    throw new BadRequestError("Invalid contact ID");
+  }
+
+  const contact = await Contact.findByIdAndDelete(contactId);
+  if (!contact) {
+    throw new NotFoundError("Not found");
+  }
+  res.status(200).json({ message: "Contact deleted" });
+});
+
+const updateContact = handleAsync(async (req, res) => {
+  const { contactId } = req.params;
+
+  if (!validateObjectId(contactId)) {
+    throw new BadRequestError("Invalid contact ID");
+  }
+
+  const { error } = validateContactBody(req.body);
+  if (error) {
+    throw new BadRequestError(error.details[0].message);
+  }
+
+  const updatedContact = await Contact.findByIdAndUpdate(contactId, req.body, {
+    new: true,
+  });
+  if (!updatedContact) {
+    throw new NotFoundError("Not found");
+  }
+  res.status(200).json(updatedContact);
+});
+
+const updateStatusContact = handleAsync(async (req, res) => {
+  const { contactId } = req.params;
+
+  if (!validateObjectId(contactId)) {
+    throw new BadRequestError("Invalid contact ID");
+  }
+
+  const { error } = validateFavoriteStatus(req.body);
+  if (error) {
+    throw new BadRequestError(error.details[0].message);
+  }
+
+  const updatedContact = await Contact.findByIdAndUpdate(
+    contactId,
+    { favorite: req.body.favorite },
+    { new: true }
+  );
+  if (!updatedContact) {
+    throw new NotFoundError("Not found");
+  }
+  res.status(200).json(updatedContact);
+});
 
 module.exports = {
   listContacts,
