@@ -1,12 +1,13 @@
 :root {
-    --primary-color: #3498db;
-    --secondary-color: #2ecc71;
-    --background-color: #ecf0f1;
-    --text-color: #2c3e50;
+    --primary-color: #8B00FF; /* Neonowy fiolet */
+    --secondary-color: #1C1C1C; /* Grafit */
+    --background-color: #2C2C2C;
+    --text-color: #FFFFFF;
+    --button-gradient: linear-gradient(45deg, #8B00FF, #FF00FF);
 }
 
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Montserrat', sans-serif;
     line-height: 1.6;
     color: var(--text-color);
     background-color: var(--background-color);
@@ -15,32 +16,44 @@ body {
 }
 
 header {
-    background-color: var(--primary-color);
-    color: white;
-    text-align: center;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
     padding: 1rem;
+    box-shadow: 0 2px 10px rgba(139, 0, 255, 0.3);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h1 {
+    margin: 0;
+    font-size: 1.5rem;
 }
 
 nav {
     display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
-nav button {
-    background-color: var(--secondary-color);
+nav button, button {
+    background-image: var(--button-gradient);
     border: none;
-    color: white;
+    color: var(--text-color);
     padding: 0.5rem 1rem;
-    margin: 0.5rem;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
+    transition: all 0.3s ease;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
 }
 
-nav button:hover {
-    background-color: #27ae60;
+nav button:hover, button:hover {
     transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(139, 0, 255, 0.7);
 }
 
 main {
@@ -50,10 +63,10 @@ main {
 }
 
 section {
-    background-color: white;
+    background-color: var(--secondary-color);
     padding: 2rem;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(139, 0, 255, 0.2);
     margin-bottom: 2rem;
 }
 
@@ -63,24 +76,13 @@ form {
     gap: 1rem;
 }
 
-input, button {
+input {
     padding: 0.5rem;
     font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-}
-
-button {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-button:hover {
-    background-color: #2980b9;
-    transform: scale(1.05);
+    border: 1px solid var(--primary-color);
+    border-radius: 5px;
+    background-color: var(--background-color);
+    color: var(--text-color);
 }
 
 ul {
@@ -89,11 +91,11 @@ ul {
 }
 
 li {
-    background-color: #f9f9f9;
+    background-color: rgba(139, 0, 255, 0.1);
     margin-bottom: 1rem;
     padding: 1rem;
     border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgba(139, 0, 255, 0.2);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -103,17 +105,110 @@ li {
     display: none;
 }
 
-@media (max-width: 600px) {
-    header {
+#pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+#pagination button {
+    margin: 0 0.5rem;
+}
+
+#userInfoContainer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+#userInfo {
+    font-style: italic;
+}
+
+#userAvatar img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+footer {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    text-align: center;
+    padding: 1rem;
+    margin-top: 2rem;
+}
+
+footer p {
+    margin: 0;
+    padding: 0 1rem;
+}
+
+@media (max-width: 768px) {
+    .header-content {
         flex-direction: column;
+        align-items: center;
+        text-align: center;
     }
 
     nav {
-        flex-direction: column;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
     }
 
-    nav button {
-        width: 100%;
-        margin: 0.25rem 0;
+    #userInfoContainer {
+        margin-top: 1rem;
+    }
+
+    li {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    li div:last-child {
+        margin-top: 0.5rem;
+    }
+
+    #pagination {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #pagination button {
+        margin: 0.5rem 0;
+    }
+
+    #currentPage {
+        margin: 0.5rem 0;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 14px;
+    }
+
+    h1 {
+        font-size: 1.2rem;
+    }
+
+    nav button, button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    main {
+        padding: 1rem;
+    }
+
+    section {
+        padding: 1rem;
+    }
+
+    li {
+        word-break: break-word;
     }
 }

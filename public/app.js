@@ -13,6 +13,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const addContactBtn = document.getElementById('addContactBtn');
     const contactsList = document.getElementById('contactsList');
     const authTitle = document.getElementById('authTitle');
+    const userInfoContainer = document.getElementById('userInfoContainer');
+    const userName = document.getElementById('userName');
+    const avatarImage = document.getElementById('avatarImage');
+    const prevPageBtn = document.getElementById('prevPage');
+    const nextPageBtn = document.getElementById('nextPage');
+    const currentPageSpan = document.getElementById('currentPage');
+
+    let currentPage = 1;
+    const contactsPerPage = 10;
+    let totalContacts = 0;
 
     homeBtn.addEventListener('click', showHome);
     contactsBtn.addEventListener('click', showContacts);
@@ -22,6 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
     authForm.addEventListener('submit', handleAuth);
     addContactBtn.addEventListener('click', showAddContactForm);
     contactForm.addEventListener('submit', handleContactForm);
+    prevPageBtn.addEventListener('click', () => changePage(-1));
+    nextPageBtn.addEventListener('click', () => changePage(1));
 
     function showSection(section) {
         [homeSection, authSection, contactsSection, contactFormSection].forEach(s => s.classList.add('hidden'));
@@ -71,6 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 const data = await response.json();
                 localStorage.setItem('token', data.token);
+                localStorage.setItem('userName', data.user.name || email.split('@')[0]);
+                localStorage.setItem('avatarUrl', data.user.avatarURL || '');
                 updateUIAfterLogin();
                 showContacts();
             } else {
@@ -84,6 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleLogout() {
         localStorage.removeItem('token');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('avatarUrl');
         updateUIAfterLogout();
         showHome();
     }
@@ -93,6 +109,10 @@ document.addEventListener('DOMContentLoaded', () => {
         registerBtn.classList.add('hidden');
         logoutBtn.classList.remove('hidden');
         contactsBtn.classList.remove('hidden');
+        userInfoContainer.classList.remove('hidden');
+        userName.textContent = localStorage.getItem('userName');
+        const avatarUrl = localStorage.getItem('avatarUrl');
+        avatarImage.src = avatarUrl || 'placeholder-avatar.png';
     }
 
     function updateUIAfterLogout() {
@@ -100,6 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
         registerBtn.classList.remove('hidden');
         logoutBtn.classList.add('hidden');
         contactsBtn.classList.add('hidden');
+        userInfoContainer.classList.add('hidden');
     }
 
     function isLoggedIn() {
@@ -115,7 +136,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (response.ok) {
                 const contacts = await response.json();
+                totalContacts = contacts.length;
                 displayContacts(contacts);
+                updatePagination();
             } else {
                 throw new Error('Nie udało się pobrać kontaktów');
             }
@@ -126,7 +149,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displayContacts(contacts) {
         contactsList.innerHTML = '';
-        contacts.forEach(contact => {
+        const startIndex = (currentPage - 1) * contactsPerPage;
+        const endIndex = startIndex + contactsPerPage;
+        const contactsToDisplay = contacts.slice(startIndex, endIndex);
+
+        contactsToDisplay.forEach(contact => {
             const li = document.createElement('li');
             li.innerHTML = `
                 <div>
@@ -141,6 +168,18 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             contactsList.appendChild(li);
         });
+    }
+
+    function updatePagination() {
+        const totalPages = Math.ceil(totalContacts / contactsPerPage);
+        currentPageSpan.textContent = `Strona ${currentPage} z ${totalPages}`;
+        prevPageBtn.disabled = currentPage === 1;
+        nextPageBtn.disabled = currentPage === totalPages;
+    }
+
+    function changePage(direction) {
+        currentPage += direction;
+        fetchContacts();
     }
 
     async function handleContactForm(e) {
