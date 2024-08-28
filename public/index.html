@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aplikacja Kontaktów</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Aplikacja Kontaktów</h1>
+      <nav>
+        <button id="homeBtn">Strona główna</button>
+        <button id="contactsBtn">Kontakty</button>
+        <button id="loginBtn">Logowanie</button>
+        <button id="registerBtn">Rejestracja</button>
+        <button id="logoutBtn" class="hidden">Wyloguj</button>
+      </nav>
+    </header>
+
+    <main>
+      <section id="homeSection">
+        <h2>Witaj w Aplikacji Kontaktów</h2>
+        <p>Zaloguj się lub zarejestruj, aby zarządzać swoimi kontaktami.</p>
+      </section>
+
+      <section id="authSection" class="hidden">
+        <h2 id="authTitle">Logowanie</h2>
+        <form id="authForm">
+          <input type="email" id="email" placeholder="Email" required />
+          <input type="password" id="password" placeholder="Hasło" required />
+          <button type="submit">Zatwierdź</button>
+        </form>
+      </section>
+
+      <section id="contactsSection" class="hidden">
+        <h2>Twoje Kontakty</h2>
+        <button id="addContactBtn">Dodaj Kontakt</button>
+        <ul id="contactsList"></ul>
+      </section>
+
+      <section id="contactFormSection" class="hidden">
+        <h2 id="contactFormTitle">Dodaj Kontakt</h2>
+        <form id="contactForm">
+          <input
+            type="text"
+            id="contactName"
+            placeholder="Imię i nazwisko"
+            required
+          />
+          <input type="email" id="contactEmail" placeholder="Email" required />
+          <input type="tel" id="contactPhone" placeholder="Telefon" required />
+          <button type="submit">Zapisz</button>
+        </form>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2024 Aplikacja Kontaktów</p>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
