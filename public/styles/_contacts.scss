@@ -1,0 +1,15 @@
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    background-color: rgba($primary-color, 0.1);
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: $border-radius;
+    box-shadow: 0 2px 5px rgba($primary-color, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
