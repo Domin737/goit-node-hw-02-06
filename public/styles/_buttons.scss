@@ -1,0 +1,19 @@
+%button-base {
+    background-image: $button-gradient;
+    border: none;
+    color: $text-color;
+    padding: 0.5rem 1rem;
+    border-radius: $border-radius;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+
+    &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba($primary-color, 0.7);
+    }
+}
+
+nav button, button {
+    @extend %button-base;
+}
